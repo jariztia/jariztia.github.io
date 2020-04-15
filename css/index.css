@@ -1,0 +1,36 @@
+body, div, button, span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  padding: 15px;
+  margin: 15px;
+  color: #FFFFFF;
+  font-size: 16px;
+  font-family: Roboto, Arial, Helvetica, Tahoma, Calibri, Verdana, sans-serif;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  height: 100vh;
+  background-image: linear-gradient(-70deg, #da3200, #f79038);
+}
+
+button {
+  border: 4px solid #FFFFFF;
+  border-radius: 3px;
+  box-sizing:  border-box;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 18px;
+  color: #FFFFFF;
+  background-color: transparent;
+  transition: all 0.2s;
+  opacity: 0.8;
+}
+
+button:hover {
+  opacity: 1;
+}

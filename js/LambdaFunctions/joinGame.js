@@ -17,6 +17,7 @@ exports.handler = (event, context, callback) => {
 
     addPlayer(gameId, playerId, playerNickname, connectionId).then(() => {
       sendBackGameId(gameId, playerId, event.requestContext).then(() => {
+        updatePlayers(gameId, event.requestContext);
         callback(null, {
           statusCode: 201,
           body: JSON.stringify({
@@ -80,5 +81,39 @@ function sendBackGameId(gameId, playerId, requestContext) {
       gameId,
       playerId,
     }),
+  }).promise();
+}
+
+function updatePlayers(gameId, requestContext) {
+  const wsAPI = new AWS.ApiGatewayManagementApi({
+    apiVersion: '2018-11-29',
+    endpoint: requestContext.domainName + '/' + requestContext.stage,
+  });
+  getPlayers(gameId).then((queryResponse) => {
+    console.log('queryResponse.Items', queryResponse.Items);
+    let playerList = queryResponse.Items.map((player) => ({
+      playerId: player.PlayerId,
+      nickname: player.Nickname,
+    }));
+    queryResponse.Items.forEach((player) => {
+      wsAPI.postToConnection({
+        ConnectionId: player.ConnectionId,
+        Data: JSON.stringify({
+          action: 'UPDATE_PLAYERS',
+          gameId,
+          playerList,
+        }),
+      }).promise();
+    });
+  });
+}
+
+function getPlayers(gameId) {
+  return ddb.query({
+    TableName: 'Players',
+    KeyConditionExpression: `GameId = :s`,
+    ExpressionAttributeValues: {
+      ':s': gameId,
+    },
   }).promise();
 }

@@ -4,7 +4,7 @@ const AWS = require('aws-sdk');
 const ddb = new AWS.DynamoDB.DocumentClient();
 
 exports.handler = (event, context, callback) => {
-  const connectionId = event.requestContext.connectionId
+  const connectionId = event.requestContext.connectionId;
   const gameId = toUrlString(randomBytes(16));
   const playerId = gameId + 'p00';
   const playerNickname = JSON.parse(event.body).nickname;
@@ -14,6 +14,7 @@ exports.handler = (event, context, callback) => {
   createGame(gameId).then(() => {
     addPlayer(gameId, playerId, playerNickname, connectionId).then(() => {
       sendBackGameId(gameId, playerId, event.requestContext).then(() => {
+        updatePlayers(gameId, event.requestContext);
         callback(null, {
           statusCode: 201,
           body: JSON.stringify({
@@ -66,17 +67,51 @@ function addPlayer(gameId, playerId, playerNickname, connectionId) {
 }
 
 function sendBackGameId(gameId, playerId, requestContext) {
-  const apigwManagementApi = new AWS.ApiGatewayManagementApi({
+  const wsAPI = new AWS.ApiGatewayManagementApi({
     apiVersion: '2018-11-29',
     endpoint: requestContext.domainName + '/' + requestContext.stage,
   });
-  return apigwManagementApi.postToConnection({
+  return wsAPI.postToConnection({
     ConnectionId: requestContext.connectionId,
     Data: JSON.stringify({
       action: 'GAME_CREATED',
       gameId,
       playerId,
     }),
+  }).promise();
+}
+
+function updatePlayers(gameId, requestContext) {
+  const wsAPI = new AWS.ApiGatewayManagementApi({
+    apiVersion: '2018-11-29',
+    endpoint: requestContext.domainName + '/' + requestContext.stage,
+  });
+  getPlayers(gameId).then((queryResponse) => {
+    console.log('queryResponse.Items', queryResponse.Items);
+    let playerList = queryResponse.Items.map((player) => ({
+      playerId: player.PlayerId,
+      nickname: player.Nickname,
+    }));
+    queryResponse.Items.forEach((player) => {
+      wsAPI.postToConnection({
+        ConnectionId: player.ConnectionId,
+        Data: JSON.stringify({
+          action: 'UPDATE_PLAYERS',
+          gameId,
+          playerList,
+        }),
+      }).promise();
+    });
+  });
+}
+
+function getPlayers(gameId) {
+  return ddb.query({
+    TableName: 'Players',
+    KeyConditionExpression: `GameId = :s`,
+    ExpressionAttributeValues: {
+      ':s': gameId,
+    },
   }).promise();
 }
 

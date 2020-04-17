@@ -11,13 +11,18 @@
     <h1>Enter Nickname</h1>
     <input id="nicknameInput" name="nickname" type="text" placeholder="Nickname" autocomplete="on" maxlength="8"/>
     <button onclick="createGame()">Create Game</button>
-    <button onclick="showJoinGame()">Join Game</button>
+    <button onclick="goToPage('join')">Join Game</button>
     <button>Rules</button>
   </div>
   <div id="invite" style="display: none">
     <h1>Invite Players</h1>
     <p id="gameId"></p>
     <button onclick="copyGameId()">Click to Copy</button>
+    <div>
+      <h3>Players:</h3>
+      <ul id="playerList"></ul>
+    </div>
+    <button id="startGameButton" onclick="startGame()" style="display: none">Start Game</button>
   </div>
   <div id="join" style="display: none">
     <h1>Enter Game ID</h1>

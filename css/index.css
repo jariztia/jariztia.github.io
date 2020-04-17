@@ -1,11 +1,11 @@
-body, div, button, span {
+body, div, button, span, input {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   justify-content: center;
   padding: 15px;
-  margin: 15px;
+  margin: 10px;
   color: #FFFFFF;
   font-size: 16px;
   font-family: Roboto, Arial, Helvetica, Tahoma, Calibri, Verdana, sans-serif;
@@ -18,7 +18,7 @@ body {
   background-image: linear-gradient(-70deg, #da3200, #f79038);
 }
 
-button {
+button, input {
   border: 4px solid #FFFFFF;
   border-radius: 3px;
   box-sizing:  border-box;
@@ -29,6 +29,22 @@ button {
   background-color: transparent;
   transition: all 0.2s;
   opacity: 0.8;
+}
+
+input {
+  margin: 20px;
+  width: 350px;
+  border-width: 2px;
+}
+
+input::placeholder {
+  color: #FFFFFF;
+  opacity: 0.5;
+}
+
+#nicknameInput {
+  width: 180px;
+  margin-bottom: 40px;
 }
 
 button:hover {

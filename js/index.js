@@ -1,10 +1,11 @@
 const wsURL = 'wss://nffqcwwwj3.execute-api.sa-east-1.amazonaws.com/websocket'
+let wsConnection;
 
 var homeEl;
 var inviteEl;
 var gameIdEl;
 var joinGameButton;
-var wsConnection;
+let nicknameInputEl;
 
 let gameId;
 let playerId;
@@ -13,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
   gameIdEl = document.getElementById('gameId');
   homeEl = document.getElementById('home');
   inviteEl = document.getElementById('invite');
+  nicknameInputEl = document.getElementById('nicknameInput');
 });
 
 function createGame(event) {
@@ -21,6 +23,7 @@ function createGame(event) {
   wsConnection.onopen = function (event) {
     wsConnection.send(JSON.stringify({
       action: 'createGame',
+      nickname: nicknameInputEl.value,
     }));
   };
 }

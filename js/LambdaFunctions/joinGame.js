@@ -11,18 +11,38 @@ exports.handler = (event, context, callback) => {
 
   console.log('Adding player "' + playerNickname + '" to game ' + gameId);
 
-  getPlayers(gameId).then((players) => {
-    console.log('players', players);
-    const playerId = gameId + 'p0' + players.Count;
+  getPlayers(gameId).then((queryResponse) => {
+    if (queryResponse.Count > 5) {
+      callback(null, {
+        statusCode: 403,
+        body: JSON.stringify({
+          Error: 'ERROR: maximum 6 players allowed',
+        }),
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+    }
+    const playerNumber = queryResponse.Count;
+    let playerList = queryResponse.Items.map((player) => ({
+      playerNumber: player.PlayerNumber,
+      nickname: player.Nickname,
+    }));
+    playerList.push({
+      playerNumber,
+      nickname: playerNickname,
+    })
+    let connectionList = queryResponse.Items.map((player) => player.ConnectionId);
+    connectionList.push(connectionId);
 
-    addPlayer(gameId, playerId, playerNickname, connectionId).then(() => {
-      sendBackGameId(gameId, playerId, event.requestContext).then(() => {
-        updatePlayers(gameId, event.requestContext);
+    addPlayer(gameId, playerNumber, playerNickname, connectionId).then(() => {
+      sendBackGameId(gameId, playerNumber, event.requestContext).then(() => {
+        updatePlayers(gameId, playerList, connectionList, event.requestContext);
         callback(null, {
           statusCode: 201,
           body: JSON.stringify({
             GameId: gameId,
-            PlayerId: playerId,
+            PlayerNumber: playerNumber,
           }),
           headers: {
             'Access-Control-Allow-Origin': '*',
@@ -46,30 +66,20 @@ exports.handler = (event, context, callback) => {
   });
 };
 
-function getPlayers(gameId) {
-  return ddb.query({
-    TableName: 'Players',
-    KeyConditionExpression: `GameId = :s`,
-    ExpressionAttributeValues: {
-      ':s': gameId,
-    },
-  }).promise();
-}
-
-function addPlayer(gameId, playerId, playerNickname, connectionId) {
+function addPlayer(gameId, playerNumber, playerNickname, connectionId) {
   return ddb.put({
     TableName: 'Players',
     Item: {
-      PlayerId: playerId,
+      PlayerNumber: playerNumber,
       GameId: gameId,
       ConnectionId: connectionId,
       Nickname: playerNickname,
-      RequestTime: new Date().toISOString(),
+      DateCreated: new Date().toISOString(),
     },
   }).promise();
 }
 
-function sendBackGameId(gameId, playerId, requestContext) {
+function sendBackGameId(gameId, playerNumber, requestContext) {
   const apigwManagementApi = new AWS.ApiGatewayManagementApi({
     apiVersion: '2018-11-29',
     endpoint: requestContext.domainName + '/' + requestContext.stage,
@@ -79,32 +89,25 @@ function sendBackGameId(gameId, playerId, requestContext) {
     Data: JSON.stringify({
       action: 'JOINED_GAME',
       gameId,
-      playerId,
+      playerNumber,
     }),
   }).promise();
 }
 
-function updatePlayers(gameId, requestContext) {
+function updatePlayers(gameId, playerList, connectionList, requestContext) {
   const wsAPI = new AWS.ApiGatewayManagementApi({
     apiVersion: '2018-11-29',
     endpoint: requestContext.domainName + '/' + requestContext.stage,
   });
-  getPlayers(gameId).then((queryResponse) => {
-    console.log('queryResponse.Items', queryResponse.Items);
-    let playerList = queryResponse.Items.map((player) => ({
-      playerId: player.PlayerId,
-      nickname: player.Nickname,
-    }));
-    queryResponse.Items.forEach((player) => {
-      wsAPI.postToConnection({
-        ConnectionId: player.ConnectionId,
-        Data: JSON.stringify({
-          action: 'UPDATE_PLAYERS',
-          gameId,
-          playerList,
-        }),
-      }).promise();
-    });
+  connectionList.forEach((ConnectionId) => {
+    wsAPI.postToConnection({
+      ConnectionId,
+      Data: JSON.stringify({
+        action: 'UPDATE_PLAYERS',
+        gameId,
+        playerList,
+      }),
+    }).promise();
   });
 }
 

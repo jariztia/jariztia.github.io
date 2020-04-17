@@ -48,6 +48,11 @@ input::placeholder {
   opacity: 0.5;
 }
 
+img {
+  height: 30vh;
+  margin: 4px;
+}
+
 #nicknameInput {
   width: 180px;
   margin-bottom: 40px;
@@ -59,4 +64,9 @@ button:hover {
 
 #gameId {
   margin: 30px 0 15px 0;
+}
+
+#selectImage {
+  display: block;
+  max-width: 45vh;
 }

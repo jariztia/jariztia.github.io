@@ -6,20 +6,20 @@ const ddb = new AWS.DynamoDB.DocumentClient();
 exports.handler = (event, context, callback) => {
   const connectionId = event.requestContext.connectionId;
   const gameId = toUrlString(randomBytes(16));
-  const playerId = gameId + 'p00';
+  const playerNumber = 0;
   const playerNickname = JSON.parse(event.body).nickname;
 
   console.log('Creating game ' + gameId);
 
   createGame(gameId).then(() => {
-    addPlayer(gameId, playerId, playerNickname, connectionId).then(() => {
-      sendBackGameId(gameId, playerId, event.requestContext).then(() => {
+    addPlayer(gameId, playerNumber, playerNickname, connectionId).then(() => {
+      sendBackGameId(gameId, playerNumber, event.requestContext).then(() => {
         updatePlayers(gameId, event.requestContext);
         callback(null, {
           statusCode: 201,
           body: JSON.stringify({
             GameId: gameId,
-            PlayerId: playerId,
+            PlayerNumber: playerNumber,
           }),
           headers: {
             'Access-Control-Allow-Origin': '*',
@@ -48,25 +48,25 @@ function createGame(gameId) {
     TableName: 'Games',
     Item: {
       GameId: gameId,
-      RequestTime: new Date().toISOString(),
+      DateCreated: new Date().toISOString(),
     },
   }).promise();
 }
 
-function addPlayer(gameId, playerId, playerNickname, connectionId) {
+function addPlayer(gameId, playerNumber, playerNickname, connectionId) {
   return ddb.put({
     TableName: 'Players',
     Item: {
-      PlayerId: playerId,
+      PlayerNumber: playerNumber,
       GameId: gameId,
       ConnectionId: connectionId,
       Nickname: playerNickname,
-      RequestTime: new Date().toISOString(),
+      DateCreated: new Date().toISOString(),
     },
   }).promise();
 }
 
-function sendBackGameId(gameId, playerId, requestContext) {
+function sendBackGameId(gameId, playerNumber, requestContext) {
   const wsAPI = new AWS.ApiGatewayManagementApi({
     apiVersion: '2018-11-29',
     endpoint: requestContext.domainName + '/' + requestContext.stage,
@@ -76,7 +76,7 @@ function sendBackGameId(gameId, playerId, requestContext) {
     Data: JSON.stringify({
       action: 'GAME_CREATED',
       gameId,
-      playerId,
+      playerNumber,
     }),
   }).promise();
 }
@@ -87,9 +87,8 @@ function updatePlayers(gameId, requestContext) {
     endpoint: requestContext.domainName + '/' + requestContext.stage,
   });
   getPlayers(gameId).then((queryResponse) => {
-    console.log('queryResponse.Items', queryResponse.Items);
     let playerList = queryResponse.Items.map((player) => ({
-      playerId: player.PlayerId,
+      playerNumber: player.PlayerNumber,
       nickname: player.Nickname,
     }));
     queryResponse.Items.forEach((player) => {

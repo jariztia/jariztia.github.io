@@ -49,8 +49,8 @@ input::placeholder {
 }
 
 img {
-  height: 30vh;
-  margin: 4px;
+  height: 32vh;
+  margin: 1px 4px;
 }
 
 #nicknameInput {
@@ -68,5 +68,5 @@ button:hover {
 
 #selectImage {
   display: block;
-  max-width: 45vh;
+  max-width: 60vh;
 }

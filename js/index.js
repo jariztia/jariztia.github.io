@@ -97,8 +97,13 @@ function goToPage(page) {
   pageEls.home.style.display = 'none';
   pageEls.invite.style.display = 'none';
   pageEls.join.style.display = 'none';
+  pageEls.selectImage.style.display = 'none';
 
-  pageEls[page].style.display = 'flex';
+  if (page === 'selectImage') {
+    pageEls[page].style.display = 'block';
+  } else {
+    pageEls[page].style.display = 'flex';
+  }
 }
 
 function copyGameId() {

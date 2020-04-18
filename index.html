@@ -31,7 +31,20 @@
   </div>
   <div id="selectImage" style="display: none">
   </div>
+  <div id="confirmImage" style="display: none">
+    <div id="selectedImage"></div>
+    <div class="horizontal-container">
+      <button onclick="backToImageSelection()">x</button>
+      <button onclick="confirmImageSelection()">✓</button>
+    </div>
+  </div>
   <div id="game" style="display: none">
+  </div>
+  <div id="roundMasterInfo" class="backdrop" onclick="hideInfo()" style="display: none">
+    <div class="popup">
+      <p>Select an image and enter a hint</p>
+      <button>Ok</button>
+    </div>
   </div>
   <script src="js/index.js"></script>
 </body>

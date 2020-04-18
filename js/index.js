@@ -9,21 +9,27 @@ let nicknameInputEl;
 let gameIdInputEl;
 let playerListEl;
 let startGameButtonEl;
+let roundMasterInfoEl;
+let selectedImageEl;
 
 let gameId;
 let playerNumber;
-let players = [];
+let playerList = [];
+let selectedImage;
 
 document.addEventListener('DOMContentLoaded', function(event) {
   pageEls.home = document.getElementById('home');
   pageEls.invite = document.getElementById('invite');
   pageEls.join = document.getElementById('join');
   pageEls.selectImage = document.getElementById('selectImage');
+  pageEls.confirmImage = document.getElementById('confirmImage');
   gameIdEl = document.getElementById('gameId');
   nicknameInputEl = document.getElementById('nicknameInput');
   gameIdInputEl = document.getElementById('gameIdInput');
   playerListEl = document.getElementById('playerList');
   startGameButtonEl = document.getElementById('startGameButton');
+  roundMasterInfoEl = document.getElementById('roundMasterInfo');
+  selectedImageEl = document.getElementById('selectedImage');
 });
 
 function createGame() {
@@ -63,6 +69,7 @@ function receiveMessage(event) {
     case 'BEGIN_ROUND':
       updatePlayerImages(data);
       goToPage('selectImage');
+      requestHint(data);
       break;
     default:
       console.log('INVALID MESSAGE: ', event.data);
@@ -80,17 +87,24 @@ function saveGameData(data) {
 }
 
 function updatePlayers(data) {
-  let playerList = '';
-  players = data.playerList;
-  players.forEach(player => playerList += `<li>${player.nickname}</li>`);
-  playerListEl.innerHTML = playerList;
+  let playerListHtml = '';
+  playerList = data.playerList;
+  playerList.forEach(player => playerListHtml += `<li>${player.nickname}</li>`);
+  playerListEl.innerHTML = playerListHtml;
 }
 
 function updatePlayerImages(data) {
   let imageList = '';
   playerImages = data.playerImages;
-  playerImages.forEach(img => imageList += `<img src="img/image-set/${img}.jpg">`);
+  playerImages.forEach(img => imageList += `<img onclick="selectImage('${img}')" src="img/image-set/${img}.jpg">`);
   pageEls.selectImage.innerHTML = imageList;
+}
+
+function requestHint(data) {
+  if (playerNumber !== data.currentRound % playerList.length) {
+    return;
+  }
+  roundMasterInfoEl.style.display = 'flex';
 }
 
 function goToPage(page) {
@@ -98,6 +112,7 @@ function goToPage(page) {
   pageEls.invite.style.display = 'none';
   pageEls.join.style.display = 'none';
   pageEls.selectImage.style.display = 'none';
+  pageEls.confirmImage.style.display = 'none';
 
   if (page === 'selectImage') {
     pageEls[page].style.display = 'block';
@@ -107,10 +122,12 @@ function goToPage(page) {
 }
 
 function copyGameId() {
-  navigator.clipboard.writeText(gameId)
-  .then(function() {
-    console.log('gameId copied to clipboard');
-  });
+  let range = document.createRange();
+  range.selectNode(gameIdEl);
+  window.getSelection().removeAllRanges();
+  window.getSelection().addRange(range);
+  document.execCommand('copy');
+  window.getSelection().removeAllRanges();
 }
 
 function startGame() {
@@ -120,4 +137,21 @@ function startGame() {
     playerNumber,
     imageList,
   }));
+}
+
+function selectImage(img) {
+  selectedImage = img;
+  selectedImageEl.innerHTML = `<img src="img/image-set/${img}.jpg">`;
+  goToPage('confirmImage');
+}
+
+function hideInfo() {
+  roundMasterInfoEl.style.display = 'none';
+}
+
+function backToImageSelection() {
+  goToPage('selectImage');
+}
+
+function confirmImageSelection() {
 }

@@ -11,6 +11,7 @@ let playerListEl;
 let startGameButtonEl;
 let roundMasterInfoEl;
 let selectedImageEl;
+let loadingEl;
 
 let gameId;
 let playerNumber;
@@ -30,29 +31,29 @@ document.addEventListener('DOMContentLoaded', function(event) {
   startGameButtonEl = document.getElementById('startGameButton');
   roundMasterInfoEl = document.getElementById('roundMasterInfo');
   selectedImageEl = document.getElementById('selectedImage');
+  loadingEl = document.getElementById('loading');
 });
 
-function createGame() {
-  wsConnection = new WebSocket(wsURL);
-  wsConnection.onmessage = receiveMessage;
-  wsConnection.onopen = function () {
-    wsConnection.send(JSON.stringify({
-      action: 'createGame',
-      nickname: nicknameInputEl.value,
-    }));
-  };
-}
-
-function joinGame() {
-  wsConnection = new WebSocket(wsURL);
-  wsConnection.onmessage = receiveMessage;
-  wsConnection.onopen = function () {
-    wsConnection.send(JSON.stringify({
-      action: 'joinGame',
-      gameId: gameIdInputEl.value,
-      nickname: nicknameInputEl.value,
-    }));
-  };
+function joinGame(isCreate) {
+  if (nicknameInputEl.value && (!isCreate === !!gameIdInputEl.value)) {
+    showLoading();
+    wsConnection = new WebSocket(wsURL);
+    wsConnection.onmessage = receiveMessage;
+    wsConnection.onopen = function () {
+      wsConnection.send(JSON.stringify({
+        action: isCreate ? 'createGame' : 'joinGame',
+        gameId: isCreate ? undefined: gameIdInputEl.value,
+        nickname: nicknameInputEl.value,
+      }));
+    };
+  } else {
+    nicknameInputEl.classList.add('shake');
+    gameIdInputEl.classList.add('shake');
+    setTimeout(() => {
+      nicknameInputEl.classList.remove('shake');
+      gameIdInputEl.classList.remove('shake');
+    }, 300);
+  }
 }
 
 function receiveMessage(event) {
@@ -84,6 +85,7 @@ function saveGameData(data) {
   if (playerNumber === 0) {
     startGameButtonEl.style.display = 'flex';
   }
+  hideLoading();
 }
 
 function updatePlayers(data) {
@@ -91,6 +93,7 @@ function updatePlayers(data) {
   playerList = data.playerList;
   playerList.forEach(player => playerListHtml += `<li>${player.nickname}</li>`);
   playerListEl.innerHTML = playerListHtml;
+  hideLoading();
 }
 
 function updatePlayerImages(data) {
@@ -98,6 +101,7 @@ function updatePlayerImages(data) {
   playerImages = data.playerImages;
   playerImages.forEach(img => imageList += `<img onclick="selectImage('${img}')" src="img/image-set/${img}.jpg">`);
   pageEls.selectImage.innerHTML = imageList;
+  hideLoading();
 }
 
 function requestHint(data) {
@@ -108,6 +112,13 @@ function requestHint(data) {
 }
 
 function goToPage(page) {
+  if (page === 'join' && !nicknameInputEl.value) {
+    nicknameInputEl.classList.add('shake');
+    setTimeout(() => {
+      nicknameInputEl.classList.remove('shake');
+    }, 300);
+    return;
+  }
   pageEls.home.style.display = 'none';
   pageEls.invite.style.display = 'none';
   pageEls.join.style.display = 'none';
@@ -131,6 +142,7 @@ function copyGameId() {
 }
 
 function startGame() {
+  showLoading();
   wsConnection.send(JSON.stringify({
     action: 'startGame',
     gameId,
@@ -155,3 +167,12 @@ function backToImageSelection() {
 
 function confirmImageSelection() {
 }
+
+function showLoading() {
+  loadingEl.style.display = 'flex';
+}
+
+function hideLoading() {
+  loadingEl.style.display = 'none';
+}
+

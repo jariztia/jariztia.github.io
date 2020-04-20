@@ -10,7 +10,7 @@
 <body>
   <div id="home">
     <input id="nicknameInput" name="nickname" type="text" placeholder="Your Nickname" autocomplete="on" maxlength="8"/>
-    <button onclick="createGame()">Create Game</button>
+    <button onclick="joinGame(true)">Create Game</button>
     <button onclick="goToPage('join')">Join Game</button>
     <button>Rules</button>
   </div>
@@ -45,6 +45,9 @@
       <p>Select an image and enter a hint</p>
       <button>Ok</button>
     </div>
+  </div>
+  <div id="loading" class="backdrop" style="display: none">
+    <div class="spinner"></div>
   </div>
   <script src="js/index.js"></script>
 </body>

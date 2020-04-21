@@ -5,6 +5,7 @@
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Image Guess</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <link rel="stylesheet" href="css/index.css">
 </head>
 <body>
@@ -30,15 +31,23 @@
     <button onclick="joinGame()">Join</button>
   </div>
   <div id="selectImage" style="display: none">
+    <h3 id="imageHint"></h3>
+    <div id="imageList"></div>
   </div>
   <div id="confirmImage" style="display: none">
     <div id="selectedImage"></div>
+    <input id="hintInput" type="text" placeholder="Hint" maxlength="15" autocomplete="off" style="display: none"/>
     <div class="horizontal-container">
       <button onclick="backToImageSelection()">x</button>
       <button onclick="confirmImageSelection()">✓</button>
     </div>
   </div>
-  <div id="game" style="display: none">
+  <i id="partyButton" onclick="showParty()" class="material-icons" style="display: none">people_alt</i>
+  <div id="partyInfo" class="backdrop" onclick="hideParty()" style="display: none">
+    <div class="popup">
+      <i class="material-icons">people_alt</i>
+      <div id="partyDetails"></div>
+    </div>
   </div>
   <div id="roundMasterInfo" class="backdrop" onclick="hideInfo()" style="display: none">
     <div class="popup">

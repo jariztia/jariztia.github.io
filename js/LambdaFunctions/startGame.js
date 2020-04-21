@@ -1,4 +1,3 @@
-const randomBytes = require('crypto').randomBytes;
 const AWS = require('aws-sdk');
 
 const ddb = new AWS.DynamoDB.DocumentClient();
@@ -29,13 +28,14 @@ exports.handler = (event, context, callback) => {
     const nextImageIndex = playerCount*6;
     const connectionList = queryResponse.Items.map((player) => player.ConnectionId);
 
-    sendPlayerImages(gameId, currentRound, imageList, connectionList, event.requestContext).then(() => {
-      updateGameInfo(gameId, playerCount, imageList, nextImageIndex, currentRound).then(() => {
+    sendPlayerImages(gameId, currentRound, imageList, connectionList, event.requestContext);
+    updateGameInfo(gameId, playerCount, imageList, nextImageIndex, currentRound).then(() => {
+      addRound(gameId, currentRound).then(() => {
         callback(null, {
           statusCode: 201,
           body: JSON.stringify({
             GameId: gameId,
-            PlayerINumber: playerNumber,
+            PlayerNumber: playerNumber,
           }),
           headers: {
             'Access-Control-Allow-Origin': '*',
@@ -59,13 +59,26 @@ exports.handler = (event, context, callback) => {
   });
 };
 
+function addRound(gameId, currentRound) {
+  return ddb.put({
+    TableName: 'Rounds',
+    Item: {
+      RoundNumber: currentRound,
+      GameId: gameId,
+      ImageHint: null,
+      SelectedImages: {},
+      DateCreated: new Date().toISOString(),
+    },
+  }).promise();
+}
+
 function updateGameInfo(gameId, playerCount, imageList, nextImageIndex, currentRound) {
   return ddb.update({
     TableName: 'Games',
     Key:{
       GameId: gameId,
     },
-    UpdateExpression: 'set playerCount = :pc, imageList = :il, nextImageIndex = :nii, currentRound = :cr',
+    UpdateExpression: 'set PlayerCount = :pc, ImageList = :il, NextImageIndex = :nii, CurrentRound = :cr',
     ExpressionAttributeValues:{
       ":pc": playerCount,
       ":il": imageList,

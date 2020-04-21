@@ -1,10 +1,9 @@
-const randomBytes = require('crypto').randomBytes;
 const AWS = require('aws-sdk');
 
 const ddb = new AWS.DynamoDB.DocumentClient();
 
 exports.handler = (event, context, callback) => {
-  const connectionId = event.requestContext.connectionId
+  const connectionId = event.requestContext.connectionId;
   const data = JSON.parse(event.body);
   const gameId = data.gameId;
   const playerNickname = data.nickname;
@@ -31,7 +30,7 @@ exports.handler = (event, context, callback) => {
     playerList.push({
       playerNumber,
       nickname: playerNickname,
-    })
+    });
     let connectionList = queryResponse.Items.map((player) => player.ConnectionId);
     connectionList.push(connectionId);
 

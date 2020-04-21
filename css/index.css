@@ -22,6 +22,10 @@ body {
   background-image: linear-gradient(-70deg, #da3200, #f79038);
 }
 
+.private-section {
+  background-image: linear-gradient(-70deg, #006308, #03dea2);
+}
+
 button, input, ul {
   border: 4px solid #FFFFFF;
   border-radius: 3px;
@@ -71,8 +75,20 @@ button:hover {
 }
 
 #selectImage {
-  display: block;
   height: 97%;
+  padding: 0;
+  margin: 0;
+}
+
+#imageHint {
+  height: 4%;
+  padding: 0;
+  margin: 0;
+}
+
+#imageList {
+  display: block;
+  height: 96%;
   max-width: 65vh;
   padding: 0;
   margin: 0;
@@ -80,12 +96,17 @@ button:hover {
 
 @media only screen and (min-width: 800px) {
   img {
-    height: 48vh;
+    height: 49%;
   }
 
-  #selectImage {
+  #imageList {
     max-width: 110vh;
   }
+}
+
+#hintInput {
+  margin: 0;
+  width: 230px;
 }
 
 .backdrop {
@@ -107,8 +128,25 @@ button:hover {
   flex-direction: row;
 }
 
+#selectedImage {
+  padding: 0;
+  margin: 20px 0;
+}
+
 #selectedImage > img {
-  height: 70vh;
+  height: 65vh;
+}
+
+#partyButton {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 8px;
+  font-size: 28px;
+}
+
+.partyDetailsItem {
+  flex-direction: row;
 }
 
 .spinner {

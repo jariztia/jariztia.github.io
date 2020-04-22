@@ -26,6 +26,7 @@ let currentRound;
 let isRoundMaster;
 let playerImages;
 let selectedImage;
+let guessedImage;
 
 /////////////////////
 //  HTML Elements  //
@@ -110,14 +111,28 @@ function startGame() {
 }
 
 function confirmImageSelection() {
-  gameState === states.WAITING_OTHERS_SELECT;
-  wsConnection.send(JSON.stringify({
-    action: 'playerSelectedImage',
-    gameId,
-    playerNumber,
-    selectedImage,
-    imageHint: hintInputEl.value,
-  }));
+  if (gameState = states.SELECTING_MY_IMAGE) {
+    gameState = states.WAITING_OTHERS_SELECT;
+    wsConnection.send(JSON.stringify({
+      action: 'playerSelectedImage',
+      gameId,
+      playerNumber,
+      selectedImage,
+      imageHint: hintInputEl.value,
+    }));
+    highlightSelectedImage();
+    backToImageSelection();
+  } else {
+    gameState = states.WAITING_OTHERS_SELECT_MASTER;
+    wsConnection.send(JSON.stringify({
+      action: 'playerGuessedImage',
+      gameId,
+      playerNumber,
+      guessedImage,
+    }));
+    // highlightGuessedImage();
+    backToImageSelection();
+  }
 }
 
 //////////////////////////////////
@@ -142,6 +157,9 @@ function receiveMessage(event) {
     case 'READY_PLAYERS':
       showHint(data);
       updateReadyPlayers(data);
+      break;
+    case 'GUESS_MASTER_IMAGE':
+      guessMasterImage(data);
       break;
     default:
       console.log('INVALID MESSAGE: ', event.data);
@@ -213,6 +231,19 @@ function updateReadyPlayers(data) {
   gameState = states.SELECTING_MY_IMAGE;
 }
 
+function guessMasterImage(data) {
+  document.body.classList.add('public-section');
+  let guessImagesHTML = '';
+  data.shuffledImages.forEach(img => guessImagesHTML +=
+    `<img
+      class="set-${playerList.length}${img === selectedImage ? ' my-image' : ''}"
+      onclick="selectImage('${img}')"
+      src="img/image-set/${img}.jpg"
+    >`);
+  imageListEl.innerHTML = guessImagesHTML;
+  gameState = states.SELECTING_MASTER_IMAGE;
+}
+
 ////////////////////////////
 //  Additional App Logic  //
 ////////////////////////////
@@ -263,12 +294,27 @@ function buildPartyHTML() {
 }
 
 function selectImage(img) {
-  if (gameState === states.WAITING_MASTER && !isRoundMaster) {
+  const notAllowed = (gameState === states.WAITING_MASTER && !isRoundMaster) ||
+                     gameState === states.WAITING_OTHERS_SELECT ||
+                     (gameState === states.SELECTING_MASTER_IMAGE && isRoundMaster) ||
+                     gameState === states.WAITING_OTHERS_SELECT_MASTER
+                     selectedImage === img;
+  if (notAllowed) {
     return;
   }
-  selectedImage = img;
+  if (gameState === states.SELECTING_MASTER_IMAGE) {
+    guessedImage = img;
+  } else {
+    selectedImage = img;
+  }
   selectedImageEl.innerHTML = `<img src="img/image-set/${img}.jpg">`;
   goToPage('confirmImage');
+}
+
+function highlightSelectedImage() {
+  const imageIndex = playerImages.indexOf(selectedImage);
+  const selectedListImageEl = imageListEl.children.item(imageIndex);
+  selectedListImageEl.classList.add('my-image');
 }
 
 function showParty() {

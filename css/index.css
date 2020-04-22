@@ -22,7 +22,7 @@ body {
   background-image: linear-gradient(-70deg, #da3200, #f79038);
 }
 
-.private-section {
+.public-section {
   background-image: linear-gradient(-70deg, #006308, #03dea2);
 }
 
@@ -61,6 +61,14 @@ img {
   margin: 1px 4px;
 }
 
+.my-image {
+  box-shadow: 0 0 0 4px #fff100;
+}
+
+.set-1, .set-2, .set-3, .set-4 {
+  height: 44%;
+}
+
 #nicknameInput {
   width: 180px;
   margin-bottom: 40px;
@@ -97,6 +105,14 @@ button:hover {
 @media only screen and (min-width: 800px) {
   img {
     height: 49%;
+  }
+
+  .set-1, .set-2, .set-3, .set-4, .set-5, .set-6 {
+    height: 49%;
+  }
+
+  .set-4 {
+    margin: 1px 30px;
   }
 
   #imageList {

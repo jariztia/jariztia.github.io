@@ -9,7 +9,8 @@ exports.handler = (event, context, callback) => {
   console.log('Player ' + playerNumber + ' selected image ' + selectedImage);
 
   getGame(gameId).then((gameQueryResult) => {
-    const currentRound = gameQueryResult.Items[0].CurrentRound;
+    const gameData = gameQueryResult.Items[0];
+    const currentRound = gameData.CurrentRound;
     getRound(gameId, currentRound).then((roundQueryResult) => {
       const roundData = roundQueryResult.Items[0];
       let roundHint = roundData.ImageHint;
@@ -21,7 +22,14 @@ exports.handler = (event, context, callback) => {
 
       updateRound(gameId, currentRound, selectedImages, roundHint).then(() => {
         let readyPlayers = Object.keys(selectedImages);
-        updateReadyPlayers(gameId, readyPlayers, roundHint, event.requestContext).then(() => {
+        getPlayers(gameId).then((playersQueryResult) => {
+          const connectionList = playersQueryResult.Items.map((player) => player.ConnectionId);
+          updateReadyPlayers(gameId, readyPlayers, roundHint, connectionList, event.requestContext);
+          if (readyPlayers.length === gameData.PlayerCount) {
+            let shuffledImages = Object.values(selectedImages);
+            shuffleArray(shuffledImages);
+            sendShuffledImages(gameId, shuffledImages, connectionList, event.requestContext);
+          }
           callback(null, {
             statusCode: 201,
             body: JSON.stringify({
@@ -66,25 +74,39 @@ function updateRound(gameId, currentRound, selectedImages, roundHint) {
   }).promise();
 }
 
-function updateReadyPlayers(gameId, readyPlayers, roundHint, requestContext) {
+function updateReadyPlayers(gameId, readyPlayers, roundHint, connectionList, requestContext) {
   const wsAPI = new AWS.ApiGatewayManagementApi({
     apiVersion: '2018-11-29',
     endpoint: requestContext.domainName + '/' + requestContext.stage,
   });
-  return getPlayers(gameId).then((playersQueryResult) => {
-    const connectionList = playersQueryResult.Items.map((player) => player.ConnectionId);
-    for (var i = 0; i < connectionList.length; i++) {
-      wsAPI.postToConnection({
-        ConnectionId: connectionList[i],
-        Data: JSON.stringify({
-          action: 'READY_PLAYERS',
-          gameId,
-          readyPlayers,
-          hint: roundHint,
-        }),
-      }).promise();
-    }
+  for (var i = 0; i < connectionList.length; i++) {
+    wsAPI.postToConnection({
+      ConnectionId: connectionList[i],
+      Data: JSON.stringify({
+        action: 'READY_PLAYERS',
+        gameId,
+        readyPlayers,
+        hint: roundHint,
+      }),
+    }).promise();
+  }
+}
+
+function sendShuffledImages(gameId, shuffledImages, connectionList, requestContext) {
+  const wsAPI = new AWS.ApiGatewayManagementApi({
+    apiVersion: '2018-11-29',
+    endpoint: requestContext.domainName + '/' + requestContext.stage,
   });
+  for (var i = 0; i < connectionList.length; i++) {
+    wsAPI.postToConnection({
+      ConnectionId: connectionList[i],
+      Data: JSON.stringify({
+        action: 'GUESS_MASTER_IMAGE',
+        gameId,
+        shuffledImages,
+      }),
+    }).promise();
+  }
 }
 
 function getGame(gameId) {
@@ -116,4 +138,11 @@ function getPlayers(gameId) {
       ':g': gameId,
     },
   }).promise();
+}
+
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
 }

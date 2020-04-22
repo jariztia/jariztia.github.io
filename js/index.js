@@ -26,6 +26,7 @@ let currentRound;
 let isRoundMaster;
 let playerImages;
 let selectedImage;
+let guessImages;
 let guessedImage;
 
 /////////////////////
@@ -111,7 +112,18 @@ function startGame() {
 }
 
 function confirmImageSelection() {
-  if (gameState = states.SELECTING_MY_IMAGE) {
+  if (gameState === states.SELECTING_MASTER_IMAGE) {
+    gameState = states.WAITING_OTHERS_SELECT_MASTER;
+    wsConnection.send(JSON.stringify({
+      action: 'playerGuessedImage',
+      gameId,
+      playerNumber,
+      guessedImage,
+    }));
+  } else {
+    if (isRoundMaster) {
+      imageHintEl.innerHTML = hintInputEl.value;
+    }
     gameState = states.WAITING_OTHERS_SELECT;
     wsConnection.send(JSON.stringify({
       action: 'playerSelectedImage',
@@ -120,19 +132,9 @@ function confirmImageSelection() {
       selectedImage,
       imageHint: hintInputEl.value,
     }));
-    highlightSelectedImage();
-    backToImageSelection();
-  } else {
-    gameState = states.WAITING_OTHERS_SELECT_MASTER;
-    wsConnection.send(JSON.stringify({
-      action: 'playerGuessedImage',
-      gameId,
-      playerNumber,
-      guessedImage,
-    }));
-    // highlightGuessedImage();
-    backToImageSelection();
   }
+  highlightSelectedImage();
+  backToImageSelection();
 }
 
 //////////////////////////////////
@@ -159,6 +161,9 @@ function receiveMessage(event) {
       break;
     case 'GUESS_MASTER_IMAGE':
       guessMasterImage(data);
+      break;
+    case 'FINISH_ROUND':
+      showPlayerSelection(data);
       break;
     default:
       console.log('INVALID MESSAGE: ', event.data);
@@ -218,14 +223,16 @@ function updateReadyPlayers(data) {
   });
   partyDetailsEl.innerHTML = buildPartyHTML();
 
-  if (data.hint && !imageHintEl.innerHTML) {
-    imageHintEl.innerHTML = data.hint;
-    imageHintEl.classList.add('shake');
-    setTimeout(() => {
-      imageHintEl.classList.remove('shake');
-    }, 300);
+  if (gameState === states.WAITING_MASTER) {
+    if (data.hint && !imageHintEl.innerHTML) {
+      imageHintEl.innerHTML = data.hint;
+      imageHintEl.classList.add('shake');
+      setTimeout(() => {
+        imageHintEl.classList.remove('shake');
+      }, 300);
+    }
+    gameState = states.SELECTING_MY_IMAGE;
   }
-  gameState = states.SELECTING_MY_IMAGE;
 
   partyButtonEl.classList.add('pop');
   setTimeout(() => {
@@ -235,8 +242,14 @@ function updateReadyPlayers(data) {
 
 function guessMasterImage(data) {
   document.body.classList.add('public-section');
+  playerList.forEach(({ playerNumber }) => {
+    partyDetails[playerNumber].ready = false;
+  });
+  partyDetailsEl.innerHTML = buildPartyHTML();
+
   let guessImagesHTML = '';
-  data.shuffledImages.forEach(img => guessImagesHTML +=
+  guessImages = data.shuffledImages;
+  guessImages.forEach(img => guessImagesHTML +=
     `<img
       class="set-${playerList.length}${img === selectedImage ? ' my-image' : ''}"
       onclick="selectImage('${img}')"
@@ -244,6 +257,15 @@ function guessMasterImage(data) {
     >`);
   imageListEl.innerHTML = guessImagesHTML;
   gameState = states.SELECTING_MASTER_IMAGE;
+}
+
+function showPlayerSelection(data) {
+  playerList.forEach(({ playerNumber }) => {
+    partyDetails[playerNumber].points = data.points[playerNumber];
+  });
+  partyDetailsEl.innerHTML = buildPartyHTML();
+
+  // build round result page
 }
 
 ////////////////////////////
@@ -287,7 +309,7 @@ function buildPartyHTML() {
     partyDetailsHTML += `
       <div class="partyDetailsItem">
         ${details.ready ? '<i class="material-icons">done_outline</i>' : '<i class="material-icons">hourglass_empty</i>'}
-        <span>${player.nickname}</span>
+        <span class="party-info-nickname">${player.nickname}</span>
         <span>${details.points}</span>
       </div>
     `;
@@ -314,9 +336,15 @@ function selectImage(img) {
 }
 
 function highlightSelectedImage() {
-  const imageIndex = playerImages.indexOf(selectedImage);
-  const selectedListImageEl = imageListEl.children.item(imageIndex);
-  selectedListImageEl.classList.add('my-image');
+  if (gameState === states.WAITING_OTHERS_SELECT_MASTER) {
+    let imageIndex = guessImages.indexOf(guessedImage);
+    const guessedListImageEl = imageListEl.children.item(imageIndex);
+    guessedListImageEl.classList.add('guessed-image');
+  } else {
+    let imageIndex = playerImages.indexOf(selectedImage);
+    const selectedListImageEl = imageListEl.children.item(imageIndex);
+    selectedListImageEl.classList.add('my-image');
+  }
 }
 
 function showParty() {

@@ -27,9 +27,13 @@ exports.handler = (event, context, callback) => {
     const playerCount = queryResponse.Count;
     const nextImageIndex = playerCount*6;
     const connectionList = queryResponse.Items.map((player) => player.ConnectionId);
+    let points = {};
+    for (var i = playerCount - 1; i >= 0; i--) {
+      points[i] = 0;
+    }
 
     sendPlayerImages(gameId, currentRound, imageList, connectionList, event.requestContext);
-    updateGameInfo(gameId, playerCount, imageList, nextImageIndex, currentRound).then(() => {
+    updateGameInfo(gameId, playerCount, imageList, nextImageIndex, currentRound, points).then(() => {
       addRound(gameId, currentRound).then(() => {
         callback(null, {
           statusCode: 201,
@@ -67,23 +71,25 @@ function addRound(gameId, currentRound) {
       GameId: gameId,
       ImageHint: null,
       SelectedImages: {},
+      GuessedImages: {},
       DateCreated: new Date().toISOString(),
     },
   }).promise();
 }
 
-function updateGameInfo(gameId, playerCount, imageList, nextImageIndex, currentRound) {
+function updateGameInfo(gameId, playerCount, imageList, nextImageIndex, currentRound, points) {
   return ddb.update({
     TableName: 'Games',
     Key:{
       GameId: gameId,
     },
-    UpdateExpression: 'set PlayerCount = :pc, ImageList = :il, NextImageIndex = :nii, CurrentRound = :cr',
+    UpdateExpression: 'set PlayerCount = :pc, ImageList = :il, NextImageIndex = :nii, CurrentRound = :cr, Points = :p',
     ExpressionAttributeValues:{
       ":pc": playerCount,
       ":il": imageList,
       ":nii": nextImageIndex,
       ":cr": currentRound,
+      ":p": points,
     },
   }).promise();
 }

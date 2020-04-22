@@ -153,12 +153,18 @@ button:hover {
   height: 65vh;
 }
 
-#partyButton {
+.partyButton {
   position: absolute;
   top: 0;
   right: 0;
   padding: 8px;
   font-size: 28px;
+  transition: all 0.2s;
+}
+
+.pop {
+  font-size: 46px;
+  color: #fff100;
 }
 
 .partyDetailsItem {

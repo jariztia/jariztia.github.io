@@ -155,7 +155,6 @@ function receiveMessage(event) {
       goToPage('selectImage');
       break;
     case 'READY_PLAYERS':
-      showHint(data);
       updateReadyPlayers(data);
       break;
     case 'GUESS_MASTER_IMAGE':
@@ -213,22 +212,25 @@ function updatePlayerImages(data) {
   }
 }
 
-function showHint(data) {
-  if (data.hint) {
-    imageHintEl.innerHTML = data.hint;
-  }
-  gameState = states.SELECTING_MY_IMAGE;
-}
-
 function updateReadyPlayers(data) {
   data.readyPlayers.forEach((playerNumber) => {
     partyDetails[playerNumber].ready = true;
   });
   partyDetailsEl.innerHTML = buildPartyHTML();
-  if (data.hint) {
+
+  if (data.hint && !imageHintEl.innerHTML) {
     imageHintEl.innerHTML = data.hint;
+    imageHintEl.classList.add('shake');
+    setTimeout(() => {
+      imageHintEl.classList.remove('shake');
+    }, 300);
   }
   gameState = states.SELECTING_MY_IMAGE;
+
+  partyButtonEl.classList.add('pop');
+  setTimeout(() => {
+    partyButtonEl.classList.remove('pop');
+  }, 300);
 }
 
 function guessMasterImage(data) {

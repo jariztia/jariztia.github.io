@@ -9,7 +9,7 @@ exports.handler = (event, context, callback) => {
   const playerNumber = 0;
   const playerNickname = JSON.parse(event.body).nickname;
 
-  console.log('Creating game ' + gameId);
+  console.log(`Creating game ${gameId}`);
 
   createGame(gameId).then(() => {
     addPlayer(gameId, playerNumber, playerNickname, connectionId).then(() => {

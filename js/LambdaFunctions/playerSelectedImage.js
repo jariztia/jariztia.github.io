@@ -6,7 +6,7 @@ exports.handler = (event, context, callback) => {
   const data = JSON.parse(event.body);
   const { gameId, playerNumber, selectedImage, imageHint } = data;
 
-  console.log('Player ' + playerNumber + ' selected image ' + selectedImage);
+  console.log(`Player ${playerNumber} (${gameId}) selected image ${selectedImage} (Hint: ${imageHint})`);
 
   getGame(gameId).then((gameQueryResult) => {
     const gameData = gameQueryResult.Items[0];

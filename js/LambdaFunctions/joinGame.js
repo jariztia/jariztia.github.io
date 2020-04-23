@@ -8,7 +8,7 @@ exports.handler = (event, context, callback) => {
   const gameId = data.gameId;
   const playerNickname = data.nickname;
 
-  console.log('Adding player "' + playerNickname + '" to game ' + gameId);
+  console.log(`Adding player ${playerNickname} to game ${gameId}`);
 
   getPlayers(gameId).then((queryResponse) => {
     if (queryResponse.Count > 5) {

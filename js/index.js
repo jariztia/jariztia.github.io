@@ -49,6 +49,7 @@ let imageHintEl;
 let partyButtonEl;
 let partyInfoEl;
 let partyDetailsEl;
+let expandedImageEl;
 
 document.addEventListener('DOMContentLoaded', function(event) {
   pageEls.home = document.getElementById('home');
@@ -71,6 +72,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
   partyButtonEl = document.getElementById('partyButton');
   partyInfoEl = document.getElementById('partyInfo');
   partyDetailsEl = document.getElementById('partyDetails');
+  expandedImageEl =  document.getElementById('expandedImage');
 });
 
 ////////////////////////////
@@ -139,6 +141,15 @@ function confirmImageSelection() {
   backToImageSelection();
 }
 
+function nextRound() {
+  showLoading();
+  wsConnection.send(JSON.stringify({
+    action: 'nextRound',
+    gameId,
+    playerNumber,
+  }));
+}
+
 //////////////////////////////////
 //  React to Incoming Messages  //
 //////////////////////////////////
@@ -155,7 +166,7 @@ function receiveMessage(event) {
       updatePlayers(data);
       break;
     case 'BEGIN_ROUND':
-      updatePlayerImages(data);
+      setUpRound(data);
       goToPage('selectImage');
       break;
     case 'READY_PLAYERS':
@@ -191,14 +202,27 @@ function updatePlayers(data) {
   hideLoading();
 }
 
-function updatePlayerImages(data) {
+function setUpRound(data) {
   currentRound = data.currentRound;
   masterPlayerNumber = currentRound % playerList.length;
   isRoundMaster = playerNumber === masterPlayerNumber;
   let playerImagesHTML = '';
-  playerImages = data.playerImages;
+
+  if (data.playerImages) {
+    playerImages = data.playerImages;
+  } else {
+    playerImages.splice(playerImages.indexOf(selectedImage), 1);
+    playerImages.push(data.newPlayerImage);
+  }
+  
   playerImages.forEach(img => playerImagesHTML += `<img onclick="selectImage('${img}')" src="img/image-set/${img}.jpg">`);
   imageListEl.innerHTML = playerImagesHTML;
+  
+  selectedImage = undefined;
+  guessedImage = undefined;
+  imageHintEl.innerHTML = '';
+  hintInputEl.style.display = 'none';
+  document.body.classList.remove('public-section');
   gameState = states.WAITING_MASTER;
   hideLoading();
 
@@ -217,6 +241,11 @@ function updatePlayerImages(data) {
     });
     partyDetailsEl.innerHTML = buildPartyHTML();
     partyButtonEl.style.display = 'flex';
+  } else {
+    playerList.forEach(({ playerNumber }) => {
+      partyDetails[playerNumber].ready = false;
+    });
+    partyDetailsEl.innerHTML = buildPartyHTML();
   }
 }
 
@@ -352,13 +381,16 @@ function buildRoundResultPage(data, pointsDiff) {
   playerList.forEach(({playerNumber, nickname}) => {
     roundResultHTML += `
       <div class="listItem">
-        <img class="list-image" src="img/image-set/${selectedImages[playerNumber]}.jpg">
+        <img class="list-image" onclick="expandImage(${selectedImages[playerNumber]})" src="img/image-set/${selectedImages[playerNumber]}.jpg">
         <span class="list-nickname">${nickname} ${playerNumber === masterPlayerNumber ? '<i class="material-icons master-star">star</i>' : ''}</span>
         <div class="list-votes">${votesPerPlayer[playerNumber] || ' '}</div>
         <span>+${pointsDiff[playerNumber]}</span>
       </div>
     `;
   });
+  if (isRoundMaster) {
+    roundResultHTML += '<button class="separate-button" onclick="nextRound()">Next Round</button>';
+  }
   pageEls.roundResult.innerHTML = roundResultHTML;
 }
 
@@ -390,6 +422,15 @@ function highlightSelectedImage() {
     const selectedListImageEl = imageListEl.children.item(imageIndex);
     selectedListImageEl.classList.add('my-image');
   }
+}
+
+function expandImage(img) {
+  expandedImageEl.innerHTML = `<img src="img/image-set/${img}.jpg">`;
+  expandedImageEl.style.display = 'flex';
+}
+
+function closeExpandedImage() {
+  expandedImageEl.style.display = 'none';
 }
 
 function showParty() {

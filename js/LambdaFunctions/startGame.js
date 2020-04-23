@@ -9,6 +9,7 @@ exports.handler = (event, context, callback) => {
   const currentRound = 0;
 
   if (playerNumber !== 0) {
+    console.log(`Player ${playerNumber} not allowed to start Game ${gameId}`);
     callback(null, {
       statusCode: 403,
       body: JSON.stringify({
@@ -21,7 +22,7 @@ exports.handler = (event, context, callback) => {
     return;
   }
 
-  console.log('Starting Game "' + gameId);
+  console.log(`Starting Game ${gameId}`);
 
   getPlayers(gameId).then((queryResponse) => {
     const playerCount = queryResponse.Count;

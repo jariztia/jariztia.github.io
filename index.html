@@ -38,10 +38,11 @@
     <div id="selectedImage"></div>
     <input id="hintInput" type="text" placeholder="Hint" maxlength="15" autocomplete="off" style="display: none"/>
     <div class="horizontal-container">
-      <button onclick="backToImageSelection()">x</button>
-      <button onclick="confirmImageSelection()">✓</button>
+      <button class="icon-button" onclick="backToImageSelection()"><i class="material-icons">close</i></button>
+      <button class="icon-button" onclick="confirmImageSelection()"><i class="material-icons">done</i></button>
     </div>
   </div>
+  <div id="roundResult"></div>
   <i id="partyButton" onclick="showParty()" class="material-icons partyButton" style="display: none">people_alt</i>
   <div id="partyInfo" class="backdrop" onclick="hideParty()" style="display: none">
     <div class="popup">

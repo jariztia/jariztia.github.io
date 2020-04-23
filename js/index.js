@@ -23,6 +23,7 @@ let playerNumber;
 let playerList = [];
 let partyDetails = {};
 let currentRound;
+let masterPlayerNumber;
 let isRoundMaster;
 let playerImages;
 let selectedImage;
@@ -55,6 +56,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
   pageEls.join = document.getElementById('join');
   pageEls.selectImage = document.getElementById('selectImage');
   pageEls.confirmImage = document.getElementById('confirmImage');
+  pageEls.roundResult = document.getElementById('roundResult');
   loadingEl = document.getElementById('loading');
   gameIdEl = document.getElementById('gameId');
   nicknameInputEl = document.getElementById('nicknameInput');
@@ -191,7 +193,8 @@ function updatePlayers(data) {
 
 function updatePlayerImages(data) {
   currentRound = data.currentRound;
-  isRoundMaster = playerNumber === currentRound % playerList.length;
+  masterPlayerNumber = currentRound % playerList.length;
+  isRoundMaster = playerNumber === masterPlayerNumber;
   let playerImagesHTML = '';
   playerImages = data.playerImages;
   playerImages.forEach(img => playerImagesHTML += `<img onclick="selectImage('${img}')" src="img/image-set/${img}.jpg">`);
@@ -260,12 +263,16 @@ function guessMasterImage(data) {
 }
 
 function showPlayerSelection(data) {
+  let pointsDiff = {};
   playerList.forEach(({ playerNumber }) => {
+    pointsDiff[playerNumber] = data.points[playerNumber] - partyDetails[playerNumber].points;
     partyDetails[playerNumber].points = data.points[playerNumber];
   });
   partyDetailsEl.innerHTML = buildPartyHTML();
 
   // build round result page
+  buildRoundResultPage(data, pointsDiff);
+  goToPage('roundResult');
 }
 
 ////////////////////////////
@@ -285,6 +292,7 @@ function goToPage(page) {
   pageEls.join.style.display = 'none';
   pageEls.selectImage.style.display = 'none';
   pageEls.confirmImage.style.display = 'none';
+  pageEls.roundResult.style.display = 'none';
 
   if (page === 'selectImage') {
     pageEls[page].style.display = 'block';
@@ -304,24 +312,61 @@ function copyGameId() {
 
 function buildPartyHTML() {
   let partyDetailsHTML = '';
-  playerList.forEach((player) => {
-    const details = partyDetails[player.playerNumber];
+  playerList.forEach(({playerNumber, nickname}) => {
+    const details = partyDetails[playerNumber];
     partyDetailsHTML += `
-      <div class="partyDetailsItem">
+      <div class="listItem">
         ${details.ready ? '<i class="material-icons">done_outline</i>' : '<i class="material-icons">hourglass_empty</i>'}
-        <span class="party-info-nickname">${player.nickname}</span>
+        <span class="list-nickname">${nickname} ${playerNumber === masterPlayerNumber ? '<i class="material-icons master-star">star</i>' : ''}</span>
         <span>${details.points}</span>
       </div>
     `;
-  })
+  });
   return partyDetailsHTML;
+}
+
+function buildRoundResultPage(data, pointsDiff) {
+  const { selectedImages, guessedImages } = data;
+  const roundPoints = {};
+  const masterImage = selectedImages[masterPlayerNumber];
+  const selectedImagesArray = Object.values(selectedImages);
+  const votesPerPlayer = {};
+
+  playerList.forEach(({playerNumber, nickname}) => {
+    if (playerNumber !== masterPlayerNumber) {
+      let imageOwner = selectedImagesArray.indexOf(guessedImages[playerNumber]);
+      if (votesPerPlayer[imageOwner]) {
+        votesPerPlayer[imageOwner] += `<span class="list-nickname">${nickname}</span>`;
+      } else {
+        votesPerPlayer[imageOwner] = `<span class="list-nickname">${nickname}</span>`;
+      }
+    }
+  });
+
+  let roundResultHTML = `
+    <div class="listItem headers">
+      <span>Votes</span>
+      <span>Points</span>
+    </div>
+  `;
+  playerList.forEach(({playerNumber, nickname}) => {
+    roundResultHTML += `
+      <div class="listItem">
+        <img class="list-image" src="img/image-set/${selectedImages[playerNumber]}.jpg">
+        <span class="list-nickname">${nickname} ${playerNumber === masterPlayerNumber ? '<i class="material-icons master-star">star</i>' : ''}</span>
+        <div class="list-votes">${votesPerPlayer[playerNumber] || ' '}</div>
+        <span>+${pointsDiff[playerNumber]}</span>
+      </div>
+    `;
+  });
+  pageEls.roundResult.innerHTML = roundResultHTML;
 }
 
 function selectImage(img) {
   const notAllowed = (gameState === states.WAITING_MASTER && !isRoundMaster) ||
                      gameState === states.WAITING_OTHERS_SELECT ||
                      (gameState === states.SELECTING_MASTER_IMAGE && isRoundMaster) ||
-                     gameState === states.WAITING_OTHERS_SELECT_MASTER
+                     gameState === states.WAITING_OTHERS_SELECT_MASTER ||
                      selectedImage === img;
   if (notAllowed) {
     return;

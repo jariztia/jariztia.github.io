@@ -46,8 +46,8 @@ ul {
 }
 
 input {
-  margin: 20px;
-  width: 350px;
+  margin: 20px 0;
+  width: 290px;
   border-width: 2px;
 }
 
@@ -125,6 +125,14 @@ button:hover {
   width: 230px;
 }
 
+.icon-button {
+  padding: 8px;
+}
+
+.icon-button > i {
+  font-size: 40px;
+}
+
 .backdrop {
   position: fixed;
   top: 0;
@@ -167,16 +175,63 @@ button:hover {
   color: #fff100;
 }
 
-.partyDetailsItem {
+.listItem {
   flex-direction: row;
   margin: 10px 0;
   padding: 0;
+  justify-content: space-around;
 }
 
-.party-info-nickname {
+.headers {
+  justify-content: flex-end;
+  width: 100%;
+  font-weight: 900;
+}
+
+.headers > span {
+  margin-left: 35px;
+}
+
+.list-nickname {
+  display: flex;
+  align-items: center;
   width: 100px;
-  margin-left: 20px;
+  margin-left: 5px;
   text-align: left;
+}
+
+.master-star {
+  font-size: 28px;
+  margin-left: 3px;
+  margin-bottom: 4px;
+}
+
+.list-image {
+  height: 70px;
+}
+
+.list-votes {
+  margin: 0;
+  padding: 0;
+  min-width: 105px;
+}
+
+.list-total {
+  margin-left: 5px;
+}
+
+@media only screen and (min-width: 400px) {
+  .list-nickname {
+    width: 130px;
+  }
+
+  .list-votes {
+    min-width: 135px;
+  }
+
+  div {
+    font-size: 20px;
+  }
 }
 
 .spinner {

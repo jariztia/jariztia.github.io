@@ -50,6 +50,7 @@ let partyButtonEl;
 let partyInfoEl;
 let partyDetailsEl;
 let expandedImageEl;
+let donateEl;
 
 document.addEventListener('DOMContentLoaded', function(event) {
   pageEls.home = document.getElementById('home');
@@ -73,6 +74,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
   partyInfoEl = document.getElementById('partyInfo');
   partyDetailsEl = document.getElementById('partyDetails');
   expandedImageEl =  document.getElementById('expandedImage');
+  donateEl =  document.getElementById('donate');
 });
 
 ////////////////////////////
@@ -301,6 +303,7 @@ function showPlayerSelection(data) {
 
   // build round result page
   buildRoundResultPage(data, pointsDiff);
+  donateEl.style.display = 'block';
   goToPage('roundResult');
 }
 
@@ -322,6 +325,7 @@ function goToPage(page) {
   pageEls.selectImage.style.display = 'none';
   pageEls.confirmImage.style.display = 'none';
   pageEls.roundResult.style.display = 'none';
+  donateEl.style.display = 'none';
 
   if (page === 'selectImage') {
     pageEls[page].style.display = 'block';

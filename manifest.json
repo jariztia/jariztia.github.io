@@ -1,6 +1,6 @@
 {
-  "name": "Guess Image",
-  "short_name": "GuessImage",
+  "name": "Image Guess",
+  "short_name": "ImageGuess",
   "start_url": "/index.html",
   "display": "fullscreen",
   "background_color": "#e14b0f",

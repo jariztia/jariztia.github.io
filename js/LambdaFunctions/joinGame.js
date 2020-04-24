@@ -21,6 +21,7 @@ exports.handler = (event, context, callback) => {
           'Access-Control-Allow-Origin': '*',
         },
       });
+      return;
     }
     const playerNumber = queryResponse.Count;
     let playerList = queryResponse.Items.map((player) => ({

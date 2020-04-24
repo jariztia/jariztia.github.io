@@ -9,23 +9,23 @@ exports.handler = (event, context, callback) => {
   console.log(`Player ${playerNumber} (${gameId}) selected image ${selectedImage} (Hint: ${imageHint})`);
 
   getGame(gameId).then((gameQueryResult) => {
-    const gameData = gameQueryResult.Items[0];
-    const currentRound = gameData.CurrentRound;
-    getRound(gameId, currentRound).then((roundQueryResult) => {
+    const {CurrentRound, PlayerCount} = gameQueryResult.Items[0];
+    const masterPlayerNumber = CurrentRound % PlayerCount;
+    getRound(gameId, CurrentRound).then((roundQueryResult) => {
       const roundData = roundQueryResult.Items[0];
       let roundHint = roundData.ImageHint;
-      if (!roundHint && playerNumber === 0 && imageHint) {
+      if (!roundHint && playerNumber === masterPlayerNumber && imageHint) {
         roundHint = imageHint;
       }
       let selectedImages = { ...roundData.SelectedImages };
       selectedImages[playerNumber] = selectedImage;
 
-      updateRound(gameId, currentRound, selectedImages, roundHint).then(() => {
+      updateRound(gameId, CurrentRound, selectedImages, roundHint).then(() => {
         let readyPlayers = Object.keys(selectedImages);
         getPlayers(gameId).then((playersQueryResult) => {
           const connectionList = playersQueryResult.Items.map((player) => player.ConnectionId);
           updateReadyPlayers(gameId, readyPlayers, roundHint, connectionList, event.requestContext);
-          if (readyPlayers.length === gameData.PlayerCount) {
+          if (readyPlayers.length === PlayerCount) {
             let shuffledImages = Object.values(selectedImages);
             shuffleArray(shuffledImages);
             sendShuffledImages(gameId, shuffledImages, connectionList, event.requestContext);

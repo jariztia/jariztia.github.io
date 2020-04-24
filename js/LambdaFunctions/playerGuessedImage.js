@@ -27,20 +27,37 @@ exports.handler = (event, context, callback) => {
             const masterPlayerNumber = gameData.CurrentRound % gameData.PlayerCount;
             const masterImage = selectedImages[masterPlayerNumber];
             const selectedImagesArray = Object.values(selectedImages);
+            const guessedImagesArray = Object.values(guessedImages);
 
-            let correctCount = 0;
-            for (var i = gameData.PlayerCount - 1; i >= 0; i--) {
-              if (i !== masterPlayerNumber) {
-                if (guessedImages[i] === masterImage) {
-                  correctCount += 1;
-                  points[i] += 3;
-                } else {
+            const correctCount = guessedImagesArray.reduce((n, val) => (n + (val === masterImage)), 0);
+            if (correctCount === gameData.PlayerCount - 1) {
+              for (var i = gameData.PlayerCount - 1; i >= 0; i--) {
+                if (i !== masterPlayerNumber) {
+                  points[i] += 2;
+                }
+              }
+            } else if (correctCount === 0) {
+              for (var i = gameData.PlayerCount - 1; i >= 0; i--) {
+                if (i !== masterPlayerNumber) {
+                  points[i] += 2;
                   let imageOwner = selectedImagesArray.indexOf(guessedImages[i]);
                   points[imageOwner] += 1;
                 }
               }
+            } else {
+              for (var i = gameData.PlayerCount - 1; i >= 0; i--) {
+                if (i === masterPlayerNumber) {
+                  points[i] += 3;
+                } else {
+                  if (guessedImages[i] === masterImage) {
+                    points[i] += 3;
+                  } else {
+                    let imageOwner = selectedImagesArray.indexOf(guessedImages[i]);
+                    points[imageOwner] += 1;
+                  }
+                }
+              }
             }
-            points[masterPlayerNumber] += (correctCount > 0 && correctCount < (gameData.PlayerCount - 1) ? 3 : 0);
 
             sendSelectedImagesAndPoints(gameId, selectedImages, guessedImages, points, connectionList, event.requestContext);
             updateGame(gameId, points);

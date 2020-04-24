@@ -107,6 +107,7 @@ function joinGame(isCreate) {
         gameId: isCreate ? undefined: gameIdVal,
         nickname,
       }));
+      keepAlive();
     };
   } else {
     nicknameInputEl.classList.add('shake');
@@ -168,6 +169,17 @@ function nextRound() {
   }));
 }
 
+function keepAlive() {
+  if (wsConnection) {
+    wsConnection.send(JSON.stringify({
+      action: 'keepAlive',
+    }));
+    setTimeout(() => {
+      keepAlive();
+    }, 35000)
+  }
+}
+
 //////////////////////////////////
 //  React to Incoming Messages  //
 //////////////////////////////////
@@ -195,6 +207,9 @@ function receiveMessage(event) {
       break;
     case 'FINISH_ROUND':
       showPlayerSelection(data);
+      break;
+    case 'KEEP_ALIVE':
+      console.log('Staying alive');
       break;
     default:
       console.log('INVALID MESSAGE: ', event.data);

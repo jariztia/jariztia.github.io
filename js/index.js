@@ -77,20 +77,35 @@ document.addEventListener('DOMContentLoaded', function(event) {
   donateEl =  document.getElementById('donate');
 });
 
+///////////////////////////////
+//  Prevent Backbutton Exit  //
+///////////////////////////////
+
+document.addEventListener('DOMContentLoaded', function() {
+  history.pushState({}, '');
+})
+
+window.addEventListener('popstate', (event) => {
+  console.log('Tried to leave using backbutton');
+  history.pushState({}, '');
+});
+
 ////////////////////////////
 //  Websocket Connection  //
 ////////////////////////////
 
 function joinGame(isCreate) {
-  if (nicknameInputEl.value && (!isCreate === !!gameIdInputEl.value)) {
+  const nickname = nicknameInputEl.value.replace(/[^a-zA-Z0-9]/g, '');
+  const gameIdVal = gameIdInputEl.value;
+  if (nickname && (!isCreate === !!gameIdVal)) {
     showLoading();
     wsConnection = new WebSocket(wsURL);
     wsConnection.onmessage = receiveMessage;
     wsConnection.onopen = function () {
       wsConnection.send(JSON.stringify({
         action: isCreate ? 'createGame' : 'joinGame',
-        gameId: isCreate ? undefined: gameIdInputEl.value,
-        nickname: nicknameInputEl.value,
+        gameId: isCreate ? undefined: gameIdVal,
+        nickname,
       }));
     };
   } else {
@@ -127,8 +142,9 @@ function confirmImageSelection() {
       guessedImage,
     }));
   } else {
+    const imageHint = hintInputEl.value.replace(/[^a-zA-Z0-9 ñ]/g, '');
     if (isRoundMaster) {
-      imageHintEl.innerHTML = hintInputEl.value;
+      imageHintEl.innerHTML = imageHint;
     }
     gameState = states.WAITING_OTHERS_SELECT;
     wsConnection.send(JSON.stringify({
@@ -136,7 +152,7 @@ function confirmImageSelection() {
       gameId,
       playerNumber,
       selectedImage,
-      imageHint: hintInputEl.value,
+      imageHint,
     }));
   }
   highlightSelectedImage();
@@ -258,7 +274,7 @@ function updateReadyPlayers(data) {
   partyDetailsEl.innerHTML = buildPartyHTML();
 
   if (gameState === states.WAITING_MASTER) {
-    if (data.hint && !imageHintEl.innerHTML) {
+    if (data.hint) {
       imageHintEl.innerHTML = data.hint;
       imageHintEl.classList.add('shake');
       setTimeout(() => {
@@ -341,6 +357,10 @@ function copyGameId() {
   window.getSelection().addRange(range);
   document.execCommand('copy');
   window.getSelection().removeAllRanges();
+  gameIdEl.classList.add('copied');
+  setTimeout(() => {
+    gameIdEl.classList.remove('copied');
+  }, 150);
 }
 
 function buildPartyHTML() {
@@ -351,7 +371,7 @@ function buildPartyHTML() {
       <div class="listItem">
         ${details.ready ? '<i class="material-icons">done_outline</i>' : '<i class="material-icons">hourglass_empty</i>'}
         <span class="list-nickname">${nickname} ${playerNumber === masterPlayerNumber ? '<i class="material-icons master-star">star</i>' : ''}</span>
-        <span>${details.points}</span>
+        <span class="list-points">${details.points}</span>
       </div>
     `;
   });
@@ -385,10 +405,10 @@ function buildRoundResultPage(data, pointsDiff) {
   playerList.forEach(({playerNumber, nickname}) => {
     roundResultHTML += `
       <div class="listItem">
-        <img class="list-image" onclick="expandImage(${selectedImages[playerNumber]})" src="img/image-set/${selectedImages[playerNumber]}.jpg">
+        <img class="list-image" onclick="expandImage('${selectedImages[playerNumber]}')" src="img/image-set/${selectedImages[playerNumber]}.jpg">
         <span class="list-nickname">${nickname} ${playerNumber === masterPlayerNumber ? '<i class="material-icons master-star">star</i>' : ''}</span>
         <div class="list-votes">${votesPerPlayer[playerNumber] || ' '}</div>
-        <span>+${pointsDiff[playerNumber]}</span>
+        <span class="list-points">+${pointsDiff[playerNumber]}</span>
       </div>
     `;
   });

@@ -10,7 +10,7 @@
 </head>
 <body>
   <div id="home">
-    <input id="nicknameInput" name="nickname" type="text" placeholder="Your Nickname" autocomplete="on" maxlength="8"/>
+    <input id="nicknameInput" name="nickname" type="text" placeholder="Your Nickname" autocomplete="on" maxlength="10"/>
     <button onclick="joinGame(true)">Create Game</button>
     <button onclick="goToPage('join')">Join Game</button>
     <button>Rules</button>
@@ -27,7 +27,7 @@
   </div>
   <div id="join" style="display: none">
     <h1>Enter Game ID</h1>
-    <input id="gameIdInput" type="text" placeholder="Game ID" autocomplete="off"/>
+    <input id="gameIdInput" type="text" name="gameId" placeholder="Game ID" autocomplete="off"/>
     <button onclick="joinGame()">Join</button>
   </div>
   <div id="selectImage" style="display: none">
@@ -36,7 +36,7 @@
   </div>
   <div id="confirmImage" style="display: none">
     <div id="selectedImage"></div>
-    <input id="hintInput" type="text" placeholder="Hint" maxlength="15" autocomplete="off" style="display: none"/>
+    <input id="hintInput" type="text" name="gameId" placeholder="Hint" maxlength="20" autocomplete="off" style="display: none"/>
     <div class="horizontal-container">
       <button class="icon-button" onclick="backToImageSelection()"><i class="material-icons">close</i></button>
       <button class="icon-button" onclick="confirmImageSelection()"><i class="material-icons">done</i></button>

@@ -50,6 +50,10 @@ ul {
   opacity: 0.6;
 }
 
+label {
+  display: none;
+}
+
 input {
   margin: 20px 0;
   width: 290px;

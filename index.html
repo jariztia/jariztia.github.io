@@ -1,10 +1,11 @@
 <!doctype html>
-<html class="no-js" lang="">
+<html class="no-js" lang="eng">
 <head>
   <meta charset="utf-8">
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#e14b0f"/>
+  <meta name="Description" content="Game where you have to guess the image one player selected.">
   <title>Image Guess</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/vnd.microsoft.icon" href="img/favicon.ico">
@@ -15,6 +16,7 @@
 <body>
   <div id="home">
     <input id="nicknameInput" name="nickname" type="text" placeholder="Your Nickname" autocomplete="on" maxlength="10"/>
+    <label for="nickname">Enter Nickname</label>
     <button onclick="joinGame(true)">Create Game</button>
     <button onclick="goToPage('join')">Join Game</button>
     <button>Rules</button>
@@ -32,6 +34,7 @@
   <div id="join" style="display: none">
     <h1>Enter Game ID</h1>
     <input id="gameIdInput" type="text" name="gameId" placeholder="Game ID" autocomplete="off"/>
+    <label for="gameId">Enter Game Id to join that game</label>
     <button onclick="joinGame()">Join</button>
   </div>
   <div id="selectImage" style="display: none">
@@ -40,7 +43,8 @@
   </div>
   <div id="confirmImage" style="display: none">
     <div id="selectedImage"></div>
-    <input id="hintInput" type="text" name="gameId" placeholder="Hint" maxlength="20" autocomplete="off" style="display: none"/>
+    <input id="hintInput" type="text" name="hint" placeholder="Hint" maxlength="20" autocomplete="off" style="display: none"/>
+    <label for="hint">Enter the Hint for your image</label>
     <div class="horizontal-container">
       <button class="icon-button" onclick="backToImageSelection()"><i class="material-icons">close</i></button>
       <button class="icon-button" onclick="confirmImageSelection()"><i class="material-icons">done</i></button>

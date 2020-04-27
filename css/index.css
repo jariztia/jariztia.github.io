@@ -13,6 +13,7 @@ body, div, button, input, ul {
 
 html, body {
   height: 100%;
+  width: 100%;
   padding: 0;
   margin: 0;
 }
@@ -74,8 +75,23 @@ img {
   box-shadow: 0 0 0 4px #fff100;
 }
 
+.image-set {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px;
+}
+
+.image-set > img {
+  height: unset;
+  margin: 0;
+  max-width: 100%;
+  max-height: 100%;
+}
+
 .set-1, .set-2, .set-3, .set-4 {
-  height: 40%;
+  height: 48%;
+  width: 47%;
 }
 
 #nicknameInput {
@@ -100,6 +116,7 @@ button:hover {
 
 #selectImage {
   height: 97%;
+  width: 97%;
   padding: 0;
   margin: 0;
 }
@@ -297,6 +314,26 @@ button:hover {
   font-weight: 900;
   text-decoration: underline;
   font-size: 14px;
+}
+
+#message {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  padding: 0;
+  white-space: nowrap;
+  box-sizing: border-box;
+  background-color: aquamarine;
+  font-size: 20px;
+  font-weight: 900;
+  color: coral;
+  transition: width 0.2s;
+}
+
+#message.open {
+  width: 100%;
+  padding: 15px;
 }
 
 .spinner {

@@ -3,7 +3,7 @@
 /////////////////
 
 const wsURL = 'wss://nffqcwwwj3.execute-api.sa-east-1.amazonaws.com/websocket'
-const imageList = ['img40','img41','img42','img43','img44','img45','img46','img47','img48','img51','img52','img53','img54','img55','img56','img57','img58','img59','img61','img62','img63','img64','img65','img66','img67','img68','img69','img73','img74','img75','img76','img77','img78','img79','img80','img81','img88','img89','img90','img91','img92','img93','img94','img95','img96','img99','img100','img101','img102','img103','img104','img105','img106','img107','img110','img111','img112','img113','img114','img115','img116','img117','img118','img121','img122','img123','img124','img125','img126','img127','img128','img129','img131','img132','img133','img134','img135','img136','img137','img138','img139','img141','img142','img143','img144','img145','img146','img147','img148','img149','img152','img153','img154','img155','img156','img157','img158','img159','img160','img163','img164','img165','img166','img167','img168','img169','img170','img171'];
+const imageList = ['img40','img41','img42','img43','img44','img45','img46','img47','img48','img51','img52','img53','img54','img55','img56','img57','img58','img59','img61','img62','img63','img64','img65','img66','img67','img68','img69','img73','img74','img75','img76','img77','img78','img79','img80','img81','img88','img89','img90','img91','img92','img94','img95','img96','img99','img100','img101','img102','img103','img104','img105','img106','img107','img110','img111','img112','img113','img114','img115','img116','img117','img118','img121','img122','img124','img125','img126','img127','img128','img129','img131','img132','img133','img134','img135','img136','img137','img139','img141','img142','img143','img144','img145','img146','img149','img152','img153','img154','img155','img156','img157','img158','img159','img160','img163','img164','img165','img166','img168','img169','img170','img171','img172','img173','img174','img175','img176','img177','img178','img179','img180','img181','img182','img183','img184','img185','img186','img187','img188','img189','img190','img191','img192','img193','img194','img195','img196','img197','img198','img199','img200','img201','img202','img203','img204','img205','img206','img207','img208','img209','img210','img211','img212','img213','img214','img215','img216','img217','img218','img219','img220','img221','img226','img227','img229','img230','img231','img232','img234','img235','img236','img237','img238','img239','img240'];
 const states = {
   WAITING_MASTER: 0,
   SELECTING_MY_IMAGE: 1,
@@ -325,11 +325,11 @@ function guessMasterImage(data) {
   let guessImagesHTML = '';
   guessImages = data.shuffledImages;
   guessImages.forEach(img => guessImagesHTML +=
-    `<img
-      class="set-${playerList.length}${img === selectedImage ? ' my-image' : ''}"
+    `<span class="image-set set-${playerList.length}"><img
+      ${img === selectedImage ? 'class="my-image"' : ''}
       onclick="selectImage('${img}')"
       src="img/image-set/${img}.jpg"
-    >`);
+    ></span>`);
   imageListEl.innerHTML = guessImagesHTML;
   gameState = states.SELECTING_MASTER_IMAGE;
 }
@@ -368,11 +368,7 @@ function goToPage(page) {
   pageEls.roundResult.style.display = 'none';
   donateEl.style.display = 'none';
 
-  if (page === 'selectImage') {
-    pageEls[page].style.display = 'block';
-  } else {
-    pageEls[page].style.display = 'flex';
-  }
+  pageEls[page].style.display = 'flex';
 }
 
 function copyGameId() {

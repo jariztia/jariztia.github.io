@@ -105,7 +105,7 @@ window.addEventListener('popstate', (event) => {
 ////////////////////////////
 
 function joinGame(isCreate) {
-  const nickname = nicknameInputEl.value.replace(/[^a-zA-Z0-9]/g, '');
+  const nickname = nicknameInputEl.value.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ0-9]/g, '');
   const gameIdVal = gameIdInputEl.value;
   if (nickname && (!isCreate === !!gameIdVal)) {
     showLoading();
@@ -153,7 +153,7 @@ function confirmImageSelection() {
       guessedImage,
     }));
   } else {
-    const imageHint = hintInputEl.value.replace(/[^a-zA-Z0-9 ñ]/g, '');
+    const imageHint = hintInputEl.value.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ0-9 ]/g, '');
     if (isRoundMaster) {
       imageHintEl.innerHTML = imageHint;
     }
@@ -168,6 +168,7 @@ function confirmImageSelection() {
   }
   highlightSelectedImage();
   backToImageSelection();
+  hintInputEl.value = '';
 }
 
 function nextRound() {
@@ -444,7 +445,7 @@ function selectImage(img) {
                      gameState === states.WAITING_OTHERS_SELECT ||
                      (gameState === states.SELECTING_MASTER_IMAGE && isRoundMaster) ||
                      gameState === states.WAITING_OTHERS_SELECT_MASTER ||
-                     selectedImage === img;
+                     (gameState === states.SELECTING_MASTER_IMAGE && selectedImage === img);
   if (notAllowed) {
     return;
   }

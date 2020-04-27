@@ -27,6 +27,14 @@
 - Block zoom in app
 - Show check on master when not choosing
 
+# Second test comments
+
+- OK-  Fix 4 images in a column
+- Fix ready players
+- reset button from party
+- OK-  reset hint input
+- OK-  reselect same card
+
 
 
     {

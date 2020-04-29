@@ -1,5 +1,6 @@
 {
   "name": "Image Guess",
+  "version": "0.0.2",
   "short_name": "ImageGuess",
   "start_url": "/index.html",
   "display": "fullscreen",

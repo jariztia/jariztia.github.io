@@ -51,6 +51,8 @@ let partyInfoEl;
 let partyDetailsEl;
 let expandedImageEl;
 let donateEl;
+let errorInfoEl;
+let errorMessageEl;
 
 document.addEventListener('DOMContentLoaded', function(event) {
   pageEls.home = document.getElementById('home');
@@ -75,6 +77,8 @@ document.addEventListener('DOMContentLoaded', function(event) {
   partyDetailsEl = document.getElementById('partyDetails');
   expandedImageEl =  document.getElementById('expandedImage');
   donateEl =  document.getElementById('donate');
+  errorInfoEl =  document.getElementById('errorInfo');
+  errorMessageEl =  document.getElementById('errorMessage');
 });
 
 ///////////////////////////////
@@ -222,6 +226,9 @@ function receiveMessage(event) {
     case 'KEEP_ALIVE':
       console.log('Staying alive');
       break;
+    case 'ERROR':
+      displayError(data);
+      break;
     default:
       console.log('INVALID MESSAGE: ', event.data);
   }
@@ -347,6 +354,12 @@ function showPlayerSelection(data) {
   buildRoundResultPage(data, pointsDiff);
   donateEl.style.display = 'block';
   goToPage('roundResult');
+}
+
+function displayError(data) {
+  errorMessageEl.innerHTML = data.message;
+  errorInfoEl.style.display = 'flex';
+  hideLoading();
 }
 
 ////////////////////////////
@@ -508,6 +521,12 @@ function showLoading() {
 
 function hideLoading() {
   loadingEl.style.display = 'none';
+}
+
+function closeErrorExitApp() {
+  location.reload();
+  errorInfoEl.style.display = 'none';
+  errorMessageEl.innerHTML = '';
 }
 
 function reloadApp() {

@@ -10,43 +10,38 @@ exports.handler = (event, context, callback) => {
 
   console.log(`Adding player ${playerNickname} to game ${gameId}`);
 
-  getPlayers(gameId).then((queryResponse) => {
-    if (queryResponse.Count > 5) {
-      callback(null, {
-        statusCode: 403,
-        body: JSON.stringify({
-          Error: 'ERROR: maximum 6 players allowed',
-        }),
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-        },
+  getGame(gameId).then((gameQueryResult) => {
+    getPlayers(gameId).then((queryResponse) => {
+      if (queryResponse.Count > 5 || !gameQueryResult.Count || gameQueryResult.Items[0].PlayerCount) {
+        console.log('Not allowed');
+        sendError(gameId, 'Game has already started or maximum 6 players', event.requestContext);
+        return;
+      }
+      const playerNumber = queryResponse.Count;
+      let playerList = queryResponse.Items.map((player) => ({
+        playerNumber: player.PlayerNumber,
+        nickname: player.Nickname,
+      }));
+      playerList.push({
+        playerNumber,
+        nickname: playerNickname,
       });
-      return;
-    }
-    const playerNumber = queryResponse.Count;
-    let playerList = queryResponse.Items.map((player) => ({
-      playerNumber: player.PlayerNumber,
-      nickname: player.Nickname,
-    }));
-    playerList.push({
-      playerNumber,
-      nickname: playerNickname,
-    });
-    let connectionList = queryResponse.Items.map((player) => player.ConnectionId);
-    connectionList.push(connectionId);
+      let connectionList = queryResponse.Items.map((player) => player.ConnectionId);
+      connectionList.push(connectionId);
 
-    addPlayer(gameId, playerNumber, playerNickname, connectionId).then(() => {
-      sendBackGameId(gameId, playerNumber, event.requestContext).then(() => {
-        updatePlayers(gameId, playerList, connectionList, event.requestContext);
-        callback(null, {
-          statusCode: 201,
-          body: JSON.stringify({
-            GameId: gameId,
-            PlayerNumber: playerNumber,
-          }),
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-          },
+      addPlayer(gameId, playerNumber, playerNickname, connectionId).then(() => {
+        sendBackGameId(gameId, playerNumber, event.requestContext).then(() => {
+          updatePlayers(gameId, playerList, connectionList, event.requestContext);
+          callback(null, {
+            statusCode: 201,
+            body: JSON.stringify({
+              GameId: gameId,
+              PlayerNumber: playerNumber,
+            }),
+            headers: {
+              'Access-Control-Allow-Origin': '*',
+            },
+          });
         });
       });
     });
@@ -111,6 +106,16 @@ function updatePlayers(gameId, playerList, connectionList, requestContext) {
   });
 }
 
+function getGame(gameId) {
+  return ddb.query({
+    TableName: 'Games',
+    KeyConditionExpression: `GameId = :g`,
+    ExpressionAttributeValues: {
+      ':g': gameId,
+    },
+  }).promise();
+}
+
 function getPlayers(gameId) {
   return ddb.query({
     TableName: 'Players',
@@ -118,5 +123,20 @@ function getPlayers(gameId) {
     ExpressionAttributeValues: {
       ':s': gameId,
     },
+  }).promise();
+}
+
+function sendError(gameId, message, requestContext) {
+  const wsAPI = new AWS.ApiGatewayManagementApi({
+    apiVersion: '2018-11-29',
+    endpoint: requestContext.domainName + '/' + requestContext.stage,
+  });
+  return wsAPI.postToConnection({
+    ConnectionId: requestContext.connectionId,
+    Data: JSON.stringify({
+      action: 'ERROR',
+      gameId,
+      message,
+    }),
   }).promise();
 }

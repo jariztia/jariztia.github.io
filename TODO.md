@@ -3,7 +3,7 @@
 - Disconnect
 - Game does not exist when joining throw back to home
 - Rules
-- Limit players (Max 6 ready)
+- Limit players min 3 (Max 6 ready)
 - Limit rounds
 - Re-use discarded images
 - Languages
@@ -21,7 +21,7 @@
 - OK-  Fix points +2
 - OK-  Padding in party modal for long names
 - OK-  Remove autocomplete hint
-- Block new players when game started
+- OK-  Block new players when game started
 - Make it clear that round master is choosing (state bar)
 - OK-  Fix image zoom on result
 - Block zoom in app
@@ -31,7 +31,7 @@
 
 - OK-  Fix 4 images in a column
 - Fix ready players
-- reset button from party
+- OK-  reset button from party
 - OK-  reset hint input
 - OK-  reselect same card
 

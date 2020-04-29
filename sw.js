@@ -1,10 +1,5 @@
 const staticCacheName = 'image-guess-v1';
-const assets = [
-  'index.html',
-  'js/index.js',
-  'css/index.css',
-  'https://fonts.googleapis.com/icon?family=Material+Icons',
-];
+const assets = [];
 // install event
 self.addEventListener('install', evt => {
   evt.waitUntil(

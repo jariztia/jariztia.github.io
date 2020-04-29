@@ -397,6 +397,13 @@ function buildPartyHTML() {
       </div>
     `;
   });
+  partyDetailsHTML += `
+    <div class="party-buttons">
+      <button onclick="reloadApp()">Quit Game</button>
+      <button>Ok</button>
+    </div>
+  `;
+
   return partyDetailsHTML;
 }
 
@@ -501,5 +508,11 @@ function showLoading() {
 
 function hideLoading() {
   loadingEl.style.display = 'none';
+}
+
+function reloadApp() {
+  if (window.confirm('Exit game? Progress will be lost')) {
+    location.reload();
+  }
 }
 

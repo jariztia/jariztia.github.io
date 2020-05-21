@@ -333,11 +333,11 @@ function guessMasterImage(data) {
   let guessImagesHTML = '';
   guessImages = data.shuffledImages;
   guessImages.forEach(img => guessImagesHTML +=
-    `<span class="image-set set-${playerList.length}"><img
+    `<img
       ${img === selectedImage ? 'class="my-image"' : ''}
       onclick="selectImage('${img}')"
       src="img/image-set/${img}.jpg"
-    ></span>`);
+    >`);
   imageListEl.innerHTML = guessImagesHTML;
   gameState = states.SELECTING_MASTER_IMAGE;
 }

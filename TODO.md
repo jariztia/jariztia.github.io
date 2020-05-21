@@ -1,7 +1,7 @@
 # TODO:
 
 - Disconnect
-- Game does not exist when joining throw back to home
+- OK-  Game does not exist when joining throw back to home
 - Rules
 - Limit players min 3 (Max 6 ready)
 - Limit rounds
